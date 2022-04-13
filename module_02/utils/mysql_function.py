@@ -46,5 +46,13 @@ def deleteByMinId(limit):
     return
 
 
+def selectCrossPoints():
+    sql = "SELECT A.x as start_x, A.y as start_y, A.z as start_z, B.x as end_x, B.y as end_y, B.z as end_z FROM likuInfos_crossPoints as A, likuInfos_crossPoints_downPoint as B WHERE A.id = B.belongCpID;"
+    cursor.execute(sql)
+    data = cursor.fetchall()
+    db.close()
+    return data
+
+
 # if __name__ == '__main__':
 #     queryAll()
