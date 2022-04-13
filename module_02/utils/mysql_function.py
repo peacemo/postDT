@@ -1,3 +1,4 @@
+import string
 import pymysql
 
 myHost = '101.43.47.172'
@@ -46,8 +47,14 @@ def deleteByMinId(limit):
     return
 
 
-def selectCrossPoints():
-    sql = "SELECT A.x as start_x, A.y as start_y, A.z as start_z, B.x as end_x, B.y as end_y, B.z as end_z FROM likuInfos_crossPoints as A, likuInfos_crossPoints_downPoint as B WHERE A.id = B.belongCpID;"
+def selectCrossPoints(type: int):
+    """
+    type: 0 for coordinate and 1 for id
+    """
+    if type == 0:
+        sql = "SELECT A.x as start_x, A.y as start_y, A.z as start_z, B.x as end_x, B.y as end_y, B.z as end_z, B.runtime as runtime FROM likuInfos_crossPoints as A, likuInfos_crossPoints_downPoint as B WHERE A.id = B.belongCpID;"
+    if type == 1:
+        sql = "SELECT A.vice_id as start, B.vice_id, B.runtime as end FROM likuInfos_crossPoints as A, likuInfos_crossPoints_downPoint as B WHERE A.id = B.belongCpID;"
     cursor.execute(sql)
     data = cursor.fetchall()
     db.close()
