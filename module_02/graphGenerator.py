@@ -55,6 +55,7 @@ def fillWeight(graph, edgeSet, nodes):
     for edge in edgeSet:  # 遍历边表中的每一条边
         id1, id2, weight = edge[0], edge[1], edge[2]  # 取出边的信息：顶点1， 顶点2， 权值
         graph[nodes[0].index(id1)][nodes[0].index(id2)] = weight  # 将邻接矩阵中两个顶点对应位置的值设定为权值，代表存在边
+        graph[nodes[0].index(id2)][nodes[0].index(id1)] = weight  # 无向图则多这一行代码
     
     return graph
 
