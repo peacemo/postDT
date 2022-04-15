@@ -26,3 +26,4 @@ for i in range(len(graph)):
     for j in range(len(graph[i])):
         if graph[i][j] != 0:
             print(nodes[0][i], nodes[0][j], graph[i][j])
+
