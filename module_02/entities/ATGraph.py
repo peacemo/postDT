@@ -62,7 +62,7 @@ class VertexNode():
 	pass
 
 
-class Graph():
+class ATGraph():
     # 有向图
 	def __init__(self):
 		self.__adjList = None  # 描述图结构的邻接表  结构体数组

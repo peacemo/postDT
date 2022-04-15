@@ -66,3 +66,4 @@ class MyTools():
 #                       ["Person", "name", "age"]
 #                   ],
 #                   p=["name", "age", "grade"])
+MyTools.MakeClass("AMGraph",__file__,p=["nodes","weights","nodeCount","weightCount"])
