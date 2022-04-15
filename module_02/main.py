@@ -1,4 +1,5 @@
 from graphGenerator import *
+from utils.graphSearch import *
 
 def get_fake_data():
     return ((1,3,3.1), (2,1,2.5), (3,7,3.1), (3,8,3.4), (4,2,2.4), (5,2,1.5), (6,2,1.4), (9,5,2.3), (10,9,2.5), (11,9,2.1))
@@ -32,7 +33,10 @@ def main():
     graph = GraphGenerator.gen_graph(points_info)
     stacker = get_stacker(graph.nodes)
 
-    show_info(graph)
+    # show_info(graph)
+
+    level = BFS.AMG(graph, stacker)
+    print(level)
 
 
 
