@@ -1,4 +1,3 @@
-from itertools import count
 import numpy as np
 from utils.mysqlTool import *
 from entities.spot import *

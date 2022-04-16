@@ -1,4 +1,4 @@
-from graphGenerator import *
+from utils.graphGenerator import *
 from utils.graphSearch import *
 
 def get_fake_data():
