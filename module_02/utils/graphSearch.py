@@ -16,9 +16,11 @@ class BFS:
         inque = Queue(graph.nodeCount)
         level = graph.nodeCount * [0]  # 用于存储搜索到的节点的层级数
         visited = graph.nodeCount * [False]  # 用于记录某节点是否已经访问
+        checkedNodes = []
 
         level[start] = 0  # 将起始节点的层级设置为 0
         visited[start] = True  # 将起始节点设置为已访问
+        checkedNodes.append(graph.nodes[0][start])
         
         inque.put(start)
 
@@ -28,6 +30,7 @@ class BFS:
                 currentLevel = abs(level[head])  # 取得当前节点的层次
                 if (graph.weights[head][i] != 0) and (not visited[i]):  # 遍历边表，如果有边且没有访问过
                     print(graph.nodes[0][i])  # 输出这个节点的 id
+                    checkedNodes.append(graph.nodes[0][i])
                     visited[i] = True  # 将这个子节点标记为已访问
                     level[i] = currentLevel + 1  # 将子节点的层级设置为母节点 +1
                     inque.put(i)  # 子节点入队，之后会对这个节点的子节点遍历
@@ -37,11 +40,14 @@ class BFS:
                     # 也就是反向的下一层（将有向图按照无向图处理）
                     # 逻辑上层次会取反
                     print(graph.nodes[0][i])
+                    checkedNodes.append(graph.nodes[0][i])
                     visited[i] = True
                     level[i] = - (currentLevel + 1)
                     inque.put(i)
+        # level = [i + ( abs(min(level)) + 1 ) for i in level]
+        print(checkedNodes)
 
-        return level
+        return level, checkedNodes
 
 
     @classmethod

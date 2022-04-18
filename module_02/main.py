@@ -2,7 +2,9 @@ from utils.graphGenerator import *
 from utils.graphSearch import *
 
 def get_fake_data():
-    return ((1,3,3.1), (2,1,2.5), (3,7,3.1), (3,8,3.4), (4,2,2.4), (5,2,1.5), (6,2,1.4), (9,5,2.3), (10,9,2.5), (11,9,2.1))
+    # return ((1,3,3.1), (2,1,2.5), (3,7,3.1), (3,8,3.4), (4,2,2.4), (5,2,1.5), (6,2,1.4), (9,5,2.3), (10,9,2.5), (11,9,2.1))
+    return [[1,3,3.1], [2,1,2.5], [3,7,3.1], [3,8,3.4], [4,2,2.4], [5,2,1.5], [6,2,1.4], [9,5,2.3], [10,9,2.5], [11,9,2.1]]
+
 
 def get_stacker(nodes):
     """
@@ -13,6 +15,7 @@ def get_stacker(nodes):
     """
     stacker_index = 0
     return stacker_index
+
 
 def show_info(graph: AMGraph):
 
@@ -27,6 +30,7 @@ def show_info(graph: AMGraph):
             if graph.weights[i][j] != 0:
                 print(graph.nodes[0][i], graph.nodes[0][j], graph.weights[i][j])
 
+
 def main():
     # points_info = get_data(1)
     points_info = get_fake_data()
@@ -35,10 +39,23 @@ def main():
 
     # show_info(graph)
 
-    level = BFS.AMG(graph, stacker)
+    level, graph.nodes[0] = BFS.AMG(graph, stacker)
     print(level)
-
-
+    print(graph.nodes[0])
+    
+    #################################################
+    bias = abs( min(level) )
+    tempDict = {}
+    for i in range(len(level)):
+        tempDict.update({graph.nodes[0][i] : level[i]})
+    for item in points_info:
+        if tempDict[item[0]] >= 0:
+            item.insert(0, tempDict[item[0]] + 1 )
+        else:
+            item.insert(0, tempDict[item[0]])
+        pass
+    print(points_info)
+    #################################################
 
 if __name__ == "__main__":
     # execute only if run as a script
