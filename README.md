@@ -31,5 +31,5 @@ graph_of_spots = [
     [7, 3, 7, 3.1]
 ]
 
-fold_id = 1
+fold_id = 1  # 叠箱机的 id
 ```
