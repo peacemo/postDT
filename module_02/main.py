@@ -33,26 +33,25 @@ def show_info(graph: AMGraph):
 
 def main():
     # points_info = get_data(1)
-    points_info = get_fake_data()
-    graph = GraphGenerator.gen_graph(points_info)
-    stacker = get_stacker(graph.nodes)
-
+    points_info = get_fake_data()  # 获取边数据
+    graph = GraphGenerator.gen_graph(points_info)  # 通过边数据生成有向图邻接矩阵
+    stacker = get_stacker(graph.nodes)  # 获取拆叠箱机的位置
     # show_info(graph)
 
-    level, graph.nodes[0] = BFS.AMG(graph, stacker)
+    level, graph.nodes[0] = BFS.AMG(graph, stacker)  # 对图进行广搜，获取层次
     print(level)
     print(graph.nodes[0])
     
     #################################################
-    bias = abs( min(level) )
+    bias = abs( min(level) ) + 1
     tempDict = {}
     for i in range(len(level)):
         tempDict.update({graph.nodes[0][i] : level[i]})
     for item in points_info:
         if tempDict[item[0]] >= 0:
-            item.insert(0, tempDict[item[0]] + 1 )
+            item.insert(0, tempDict[item[0]] + 1 + bias )
         else:
-            item.insert(0, tempDict[item[0]])
+            item.insert(0, tempDict[item[0]] + bias)
         pass
     print(points_info)
     #################################################
