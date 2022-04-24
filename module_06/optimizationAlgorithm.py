@@ -34,6 +34,12 @@ class OptimizationAlgorithm:
 
     @classmethod
     def allCost(cls, costFun, population):
+        """
+        计算整个群体的损失
+        costFun: 损失函数
+        population: 整个群体
+        return: 群体中每一个个体的适应度值: list
+        """
         fitnessList = [-1] * len(population)  # 初始化适应度值列表，用于记录每个个体对应的适应度值
         for i in range( len(fitnessList) ):
             fitnessList[i] = costFun(population[i])
@@ -43,6 +49,11 @@ class OptimizationAlgorithm:
     
     @classmethod
     def calSelectProb(cls, fitnessList):
+        """
+        计算每一个个体被选择的概率
+        fitnessList: 群体的适应度值list
+        return: 每个个体被选择的概率
+        """
         fitnessAry = 1 / np.array(fitnessList)
         p = ( fitnessAry / sum(fitnessAry) )
         # p = (max(fitnessAry) - fitnessAry) / (max(fitnessAry) - min(fitnessAry))
@@ -52,6 +63,15 @@ class OptimizationAlgorithm:
     
     @classmethod
     def genOffspring(cls, costFun, population, selectProb, fitnessList, bestEntityIndex):
+        """
+        生成新的种群
+        costFun: 单个个体的损失计算函数
+        population: 整个种群
+        selectProb: 每个个体的被选择概率
+        fitnessList: 群体的适应度值
+        bestEntityIndex: 群体中最优的个体的索引
+        return: 新的种群
+        """
         offSprings = []
 
         while len(offSprings) < len(population):
@@ -63,7 +83,7 @@ class OptimizationAlgorithm:
             parents = [population[motherIndex], population[bestEntityIndex]]
 
             offSpring = cls.hybrid(population, parents, bestEntityIndex, 2)  # 交叉
-            # if costFun(offSpring) < fitnessList[parents[0]]:
+            # if costFun(offSpring) <= fitnessList[motherIndex]:
             #     offSprings.append(offSpring)
 
             offSprings.append(offSpring)
@@ -77,6 +97,13 @@ class OptimizationAlgorithm:
 
     @classmethod
     def hybrid(cls, population, parents, bestEntityIndex ,partition):
+        """
+        两个个体交叉
+        population: 整个种群
+        parents: 进行交叉的两个长辈
+        partition: 交叉操作所需要进行交叉的序列长度的百分比，值为 int，若长度为 30%，则 partition=3
+        return: 一个新的个体
+        """
         partLen = len(parents[0]) - int(len(parents[0]) * partition * 0.1)
         startPosition = rd.randrange(0, partLen)
         endPositon = int(startPosition + len(parents[0]) * partition * 0.1)
@@ -102,6 +129,11 @@ class OptimizationAlgorithm:
 
     @classmethod
     def mutate(cls, entity):
+        """
+        变异操作
+        entity: 变异的个体
+        return: 变异后的个体
+        """
         partLen = len(entity) - int(len(entity) * 5 * 0.1)
         start = rd.randrange(0, partLen)
         end = int(start + len(entity) * 5 * 0.1 - 1)
@@ -117,6 +149,11 @@ class OptimizationAlgorithm:
 
     @classmethod
     def roulette(cls, selectProb):
+        """
+        轮盘赌选择
+        selectProb: 种群中每个个体的被选择概率
+        return: 被选中的个体的索引值
+        """
         selection = -1
         p = rd.uniform(0, sum(selectProb))
         
