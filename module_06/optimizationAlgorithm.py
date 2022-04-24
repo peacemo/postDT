@@ -1,4 +1,5 @@
 import random as rd
+import numpy as np
 
 class OptimizationAlgorithm:
 
@@ -35,6 +36,25 @@ class OptimizationAlgorithm:
 
         return fitnessList
 
+    
+    @classmethod
+    def calSelectProb(cls, fitnessList):
+        fitnessAry = np.array(fitnessList)
+        return ( fitnessAry / sum(fitnessAry) ).tolist()
+        pass
+
+    
+    @classmethod
+    def genOffspring(cls, population, selectProb):
+        offSpring = []
+
+        while len(offSpring) < len(population):
+            # 通过累积概率选择一个个体
+
+            pass
+
+        pass
+
 
     @classmethod
     def ga(cls, costFun, seqLen, entityCount=100, iters=50):
@@ -51,23 +71,27 @@ class OptimizationAlgorithm:
         # 生成初始种群
         population = cls.gen_population(seqLen, entityCount)  # 生成初始种群
 
-        # TODO 计算整个种群的适应度值
+        # 计算整个种群的适应度值
         fitnessList = cls.allCost(costFun, population)
         print(fitnessList)
 
-        # TODO 找到当前种群中最优的个体 
-        bestEntityIndex = fitnessList.index( min(fitnessList) )
+        # 找到当前种群中最优的个体 
+        bestEntityIndex = fitnessList.index( min(fitnessList) )  # 几下最优个体在种群中的索引值
 
         # TODO 创建一个列表来保存每次迭代中种群中的最优适应度值 
+        fitnessHistory = []
 
         
         # TODO 遗传算法：
         for i in range(iters):  # 迭代次数
             # 计算种群中所有个体的适应度值()
+            fitnessList = cls.allCost(costFun, population)
 
             # 根据适应度值计算每一个个体被选中的概率()
+            selectProb = cls.calSelectProb(fitnessList)
 
             # 生成新的种群()
+            # population = cls.genOffspring(population, selectProb)
 
             pass
 
@@ -85,6 +109,6 @@ def testCost(seq):
 
     pass
 
-OptimizationAlgorithm.ga(testCost, 10, 10, 50)\
+OptimizationAlgorithm.ga(testCost, 10, 10, 50)
 
 ####################################################################
