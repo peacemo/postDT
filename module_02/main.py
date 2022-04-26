@@ -8,13 +8,13 @@ def get_fake_data():
 
 def get_stacker(nodes):
     """
-    找到拆叠箱机的 id 并返回其 index
+    找到拆叠箱机的 id
     nodes: 顶点表 [ [顶点对象], [顶点的id] ]
 
-    return: 拆叠箱机的 index
+    return: 拆叠箱机的 id
     """
-    stacker_index = 0
-    return stacker_index
+    stacker = 1
+    return stacker
 
 
 def show_info(graph: AMGraph):
@@ -33,7 +33,8 @@ def show_info(graph: AMGraph):
 
 def main():
     # points_info = get_data(1)
-    points_info = get_fake_data()  # 获取边数据
+    # points_info = get_fake_data()  # 获取边数据
+    points_info = GraphGenerator.getEdges()
     graph = GraphGenerator.gen_graph(points_info)  # 通过边数据生成有向图邻接矩阵
     stacker = get_stacker(graph.nodes)  # 获取拆叠箱机的位置
     # show_info(graph)

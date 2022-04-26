@@ -1,3 +1,4 @@
+from webbrowser import get
 from entities.AMGraph import *
 from queue import Queue
 
@@ -6,7 +7,7 @@ class BFS:
         pass
 
     @classmethod
-    def AMG(cls, graph: AMGraph, start) -> list:
+    def AMG(cls, graph: AMGraph, stacker) -> list:
         """
         邻接矩阵形式的图的广搜
         graph: 邻接矩阵
@@ -17,6 +18,7 @@ class BFS:
         level = graph.nodeCount * [0]  # 用于存储搜索到的节点的层级数
         visited = graph.nodeCount * [False]  # 用于记录某节点是否已经访问
         checkedNodes = []
+        start = graph.nodes[0].index(stacker)
 
         level[start] = 0  # 将起始节点的层级设置为 0
         visited[start] = True  # 将起始节点设置为已访问
@@ -46,6 +48,14 @@ class BFS:
                     inque.put(i)
         # level = [i + ( abs(min(level)) + 1 ) for i in level]
         print(checkedNodes)
+
+        try:
+            visited.index(False)
+            print("不是一个连通图")
+            pass
+        except:
+            print("是一个连通图")
+            pass
 
         return level, checkedNodes
 

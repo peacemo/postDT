@@ -1,5 +1,7 @@
 import string
+import ast
 import pymysql
+import json
 
 myHost = '101.43.47.172'
 myPort = 3306
@@ -59,6 +61,40 @@ def selectCrossPoints(type: int):
     data = cursor.fetchall()
     db.close()
     return data
+
+
+def readJSON():
+    f = open("C:\\Users\\A\\Desktop\\产线数据.json", encoding="utf-8")
+    file = json.load(f)
+    return file
+
+
+def insertProductionLineData():
+    i = 1
+    f = readJSON()
+    info = f["info"]
+    for data in info:
+        data = str(data)
+        print(data)
+        sql = "insert into production_line_data (data, sign) VALUES ('%s', '产线数据')" % pymysql.converters.escape_string(data)
+        cursor.execute(sql)
+        if i % 10 == 0:
+            print(i)
+        i = i + 1
+    db.commit()
+    print("插入成功！")
+
+
+def getProductionLineData():
+    res = []
+    sql = "select data from production_line_data where sign = '产线数据'"
+    cursor.execute(sql)
+    fetchall = cursor.fetchall()
+    for data in fetchall:
+        tmp = ast.literal_eval(data[0])
+        # print(tmp)
+        res.append(tmp)
+    return res
 
 
 # if __name__ == '__main__':

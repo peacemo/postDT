@@ -2,22 +2,80 @@ import numpy as np
 from utils.mysqlTool import *
 from entities.spot import *
 from entities.AMGraph import *
+import copy as cp
 
 class GraphGenerator:
 
     def __init__(self) -> None:
         pass
 
+
     @classmethod
-    def get_data(cls, type: int):
+    def getEdges(cls):
+        data = cls.get_edge_data()
+        edges = []
+        edgesAxis = []
+        for spot in data:
+            edge = []
+            edgeAxis = []
+
+            id = spot['id']
+            axis = spot['position']
+
+            for nextSpot in spot['downPoints']:
+                edge.append([id, nextSpot['id'], nextSpot['runtime']])
+                edgeAxis.append([axis, nextSpot['position'], nextSpot['runtime']])
+            # print(edge)
+
+            for item in edge:
+                edges.append(item)
+
+            for item in edgeAxis:
+                edgesAxis.append(item)
+        
+        edges = cls.genEdgesWithId(edges)
+        
+        # return edges, edgesAxis
+        return edges
+
+    
+    @classmethod
+    def genEdgesWithId(cls, edges):
+        # print(edges)
+        id = 0
+        dictionary = {}
+        edgesWithID = cp.deepcopy(edges)
+        
+        for i in range(len(edgesWithID)):
+            for j in range(len(edgesWithID[i]) - 1):
+                if edgesWithID[i][j] not in dictionary.keys():
+                    dictionary[edgesWithID[i][j]] = id
+                    edgesWithID[i][j] = id
+                    id += 1
+                else:
+                    edgesWithID[i][j] = dictionary[edgesWithID[i][j]]
+        
+        dictionary = dict([val,key] for key,val in dictionary.items())  # 键值互换
+
+        # print(dictionary)
+        # print(edges)
+        return edgesWithID
+
+        pass
+
+
+    @classmethod
+    def get_edge_data(cls):
         """
         从数据库中查询节点的边权表
         type: 查询类型
             0 为坐标表示，1 为 id 表示
         """
-        points = selectCrossPoints(type)
-        print("Points: \n", points)
-        return points
+        # points = selectCrossPoints(type)
+        data = getProductionLineData()
+        print("Data: \n", data)
+        return data
+
 
     @classmethod
     def gen_graph(cls, edgeSet):
@@ -31,6 +89,7 @@ class GraphGenerator:
         graph.weights, graph.weightCount = cls.fillWeight(graph.weights, edgeSet, graph.nodes)  # 向邻接矩阵中填入权值
         return graph
         pass
+
 
     @classmethod
     def getNodes(cls, edgeSet):
@@ -52,6 +111,7 @@ class GraphGenerator:
         
         return nodes, nodeCount  # 返回表
         pass
+
 
     @classmethod
     def fillWeight(cls, weights, edgeSet, nodes):
