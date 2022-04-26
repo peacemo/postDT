@@ -66,6 +66,8 @@ def main():
             print("入库产线不包含此点")
     print(points_info)
     #################################################
+
+    # TODO 去除不可到达的点位
     return points_info
 
 if __name__ == "__main__":

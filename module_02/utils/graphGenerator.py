@@ -13,7 +13,8 @@ class GraphGenerator:
 
     @classmethod
     def getEdges(cls):
-        # TODO 辊道的运行速度
+        
+        # TODO 辊道的运行速度,将其抽出为一个单独的函数
         speed = 0.33  # 辊道运行速度用于计算时间
 
         data = cls.get_edge_data()
