@@ -69,14 +69,18 @@ def readJSON():
     return file
 
 
+## 0426
 def insertProductionLineData():
+    flag = getMaxFlag() + 1
     i = 1
     f = readJSON()
     info = f["info"]
     for data in info:
+        innerId = data["id"]
         data = str(data)
         print(data)
-        sql = "insert into production_line_data (data, sign) VALUES ('%s', '产线数据')" % pymysql.converters.escape_string(data)
+        sql = "insert into production_line_data (data, sign, inner_id, flag) VALUES " \
+              "('%s', '产线数据', '%s', %d)" % (pymysql.converters.escape_string(data), innerId, flag)
         cursor.execute(sql)
         if i % 10 == 0:
             print(i)
@@ -86,8 +90,9 @@ def insertProductionLineData():
 
 
 def getProductionLineData():
+    flag = getMaxFlag()
     res = []
-    sql = "select data from production_line_data where sign = '产线数据'"
+    sql = "select data from production_line_data where sign = '产线数据' and flag = %d" % flag
     cursor.execute(sql)
     fetchall = cursor.fetchall()
     for data in fetchall:
@@ -95,6 +100,29 @@ def getProductionLineData():
         # print(tmp)
         res.append(tmp)
     return res
+
+
+def getStacks():
+    flag = getMaxFlag()
+    res = []
+    sql = "select data from production_line_data where inner_id like '%堆垛机' and flag = %d" % flag
+    cursor.execute(sql)
+    fetchall = cursor.fetchall()
+    for data in fetchall:
+        tmp = ast.literal_eval(data[0])
+        # print(tmp)
+        res.append(tmp)
+    return res
+
+
+def getMaxFlag():
+    sql = "select max(flag) from production_line_data"
+    cursor.execute(sql)
+    fetchAll = cursor.fetchall()
+    if fetchAll[0][0] is None:
+        return 0
+    sign = fetchAll[0][0]
+    return sign
 
 
 # if __name__ == '__main__':

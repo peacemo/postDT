@@ -51,13 +51,20 @@ class BFS:
 
         try:
             visited.index(False)
-            print("不是一个连通图")
+            print("不是一个连通图,以下是从叠箱机出发无法访问的节点: ")
+            deVisited = []
+            for i in range(len(visited)):
+                if not visited[i]:
+                    deVisited.append(graph.nodes[0][i])
+                    level[i] = float('inf')
+            print(deVisited)
             pass
         except:
             print("是一个连通图")
             pass
 
-        return level, checkedNodes
+        # return level, checkedNodes
+        return level, graph.nodes[0]
 
 
     @classmethod

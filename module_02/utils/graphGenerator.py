@@ -1,3 +1,4 @@
+from turtle import speed
 import numpy as np
 from utils.mysqlTool import *
 from entities.spot import *
@@ -12,6 +13,9 @@ class GraphGenerator:
 
     @classmethod
     def getEdges(cls):
+        # TODO 辊道的运行速度
+        speed = 0.33  # 辊道运行速度用于计算时间
+
         data = cls.get_edge_data()
         edges = []
         edgesAxis = []
@@ -23,6 +27,9 @@ class GraphGenerator:
             axis = spot['position']
 
             for nextSpot in spot['downPoints']:
+                axisArr = np.array(axis)
+                nextAxisArr = np.array(nextSpot['position'])
+                nextSpot['runtime'] = round(sum(abs(axisArr - nextAxisArr) / speed), 4)
                 edge.append([id, nextSpot['id'], nextSpot['runtime']])
                 edgeAxis.append([axis, nextSpot['position'], nextSpot['runtime']])
             # print(edge)
@@ -33,10 +40,10 @@ class GraphGenerator:
             for item in edgeAxis:
                 edgesAxis.append(item)
         
-        edges = cls.genEdgesWithId(edges)
+        edges, dvcDictionary = cls.genEdgesWithId(edges)
         
         # return edges, edgesAxis
-        return edges
+        return edges, dvcDictionary
 
     
     @classmethod
@@ -59,7 +66,7 @@ class GraphGenerator:
 
         # print(dictionary)
         # print(edges)
-        return edgesWithID
+        return edgesWithID, dictionary
 
         pass
 
@@ -73,7 +80,7 @@ class GraphGenerator:
         """
         # points = selectCrossPoints(type)
         data = getProductionLineData()
-        print("Data: \n", data)
+        # print("Data: \n", data)
         return data
 
 
