@@ -46,7 +46,7 @@ class Tools:
                     item.insert(0, tempDict[item[0]] + bias)
                 pass
             except:
-                print("入库产线不包含此点")
+                print("入库产线不包含此边", item)
         
         pointsInfo = sorted(pointsInfo, key=lambda x: (x[0], -x[-1]))  # 按照pointsInfo中的第 1 个和最后一个值排序,第一个字段升序,最后一个字段降序
         pointsInfo = [points for points in pointsInfo if points[0] != float('inf')]  # 去除不连通的边

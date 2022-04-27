@@ -1,4 +1,3 @@
-from turtle import speed
 import numpy as np
 from utils.mysqlTool import *
 from entities.spot import *

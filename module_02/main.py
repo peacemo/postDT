@@ -10,14 +10,20 @@ def getFakeData():
 def main():
     # points_info = get_fake_data()  # 获取边数据
     points_info, dvcDictionary = GraphGenerator.getEdges()
+
+    print("获取到的边表如下: ", points_info, "\n")
+
     graph = GraphGenerator.genGraph(points_info)  # 通过边数据生成有向图邻接矩阵
     stacker = Tools.getStacker(dvcDictionary)  # 获取拆叠箱机的位置
     # show_info(graph)
 
     level, graph.nodes[0] = BFS.AMG(graph, stacker)  # 对图进行广搜，获取层次
-    print(level)
-    print(graph.nodes[0])
-    
+
+    ###############################################
+    # print(level)
+    # print(graph.nodes[0])
+    ###############################################
+
     outputData = Tools.stdOutput(level, graph.nodes[0], points_info, stacker)
 
     print(outputData)

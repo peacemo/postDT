@@ -31,7 +31,11 @@ class BFS:
             for i in range(graph.nodeCount):  # 開始對首元的下一層節點遍歷
                 currentLevel = abs(level[head])  # 取得当前节点的层次
                 if (graph.weights[head][i] != 0) and (not visited[i]):  # 遍历边表，如果有边且没有访问过
-                    print(graph.nodes[0][i])  # 输出这个节点的 id
+
+                    ###############################################
+                    # print(graph.nodes[0][i])  # 输出这个节点的 id
+                    ###############################################
+
                     checkedNodes.append(graph.nodes[0][i])
                     visited[i] = True  # 将这个子节点标记为已访问
                     level[i] = currentLevel + 1  # 将子节点的层级设置为母节点 +1
@@ -41,13 +45,20 @@ class BFS:
                     # 这里是 A-B 没有路径，但是 B-A 有路径
                     # 也就是反向的下一层（将有向图按照无向图处理）
                     # 逻辑上层次会取反
-                    print(graph.nodes[0][i])
+
+                    ###############################################
+                    # print(graph.nodes[0][i])
+                    ###############################################
+
                     checkedNodes.append(graph.nodes[0][i])
                     visited[i] = True
                     level[i] = - (currentLevel + 1)
                     inque.put(i)
         # level = [i + ( abs(min(level)) + 1 ) for i in level]
-        print(checkedNodes)
+
+        ###############################################
+        # print(checkedNodes)
+        ###############################################
 
         try:
             visited.index(False)
@@ -57,7 +68,7 @@ class BFS:
                 if not visited[i]:
                     deVisited.append(graph.nodes[0][i])
                     level[i] = float('inf')
-            print(deVisited)
+            print(deVisited, "\n")
             pass
         except:
             print("是一个连通图")
