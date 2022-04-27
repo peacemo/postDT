@@ -52,7 +52,7 @@ class Tools:
         pointsInfo = [points for points in pointsInfo if points[0] != float('inf')]  # 去除不连通的边
         # print(pointsInfo)
 
-        outputData = {'graphOfSpots' : pointsInfo, 'stackerID' : 1}
+        outputData = {'graphOfSpots' : pointsInfo, 'stackerID' : stacker}
 
         return outputData
         pass

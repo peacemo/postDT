@@ -3,3 +3,9 @@
 **/*.ipynb
 **test**
 dataProc
+
+**model_5.py**
+**mysql_goodsLocationInfo**
+**mysql_productionLineData**
+
+**module_week/files/**

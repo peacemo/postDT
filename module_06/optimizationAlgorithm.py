@@ -4,6 +4,7 @@ from secrets import choice
 from statistics import mean
 import numpy as np
 import copy as cp
+from model_5 import *
 
 class OptimizationAlgorithm:
 
@@ -42,6 +43,7 @@ class OptimizationAlgorithm:
         """
         fitnessList = [-1] * len(population)  # 初始化适应度值列表，用于记录每个个体对应的适应度值
         for i in range( len(fitnessList) ):
+            # print(population[i])
             fitnessList[i] = costFun(population[i])
 
         return fitnessList
@@ -54,6 +56,7 @@ class OptimizationAlgorithm:
         fitnessList: 群体的适应度值list
         return: 每个个体被选择的概率
         """
+        # fitnessAry = np.array(fitnessList)
         fitnessAry = 1 / np.array(fitnessList)
         p = ( fitnessAry / sum(fitnessAry) )
         # p = (max(fitnessAry) - fitnessAry) / (max(fitnessAry) - min(fitnessAry))
@@ -62,7 +65,7 @@ class OptimizationAlgorithm:
 
     
     @classmethod
-    def genOffspring(cls, costFun, population, selectProb, fitnessList, bestEntityIndex):
+    def genOffspring(cls, costFun, population, selectProb, fitnessList, best10Index):
         """
         生成新的种群
         costFun: 单个个体的损失计算函数
@@ -73,16 +76,18 @@ class OptimizationAlgorithm:
         return: 新的种群
         """
         offSprings = []
+        for index in best10Index:
+            offSprings.append(population[index])
 
         while len(offSprings) < len(population):
-            # 通过累积概率选择两个个体进行杂交
-            motherIndex = cls.roulette(selectProb)
-            fatherIndex = motherIndex
-            while motherIndex == fatherIndex:
-                fatherIndex = cls.roulette(selectProb)
-            parents = [population[motherIndex], population[bestEntityIndex]]
+            
+            parentAIndex = cls.roulette(selectProb)  # 通过累积概率选择一个个体
+            parentBIndex = rd.choice(best10Index.tolist())  # 从最优的10个个体中选择一个个体
+            while parentAIndex == parentBIndex:
+                parentBIndex = rd.choice(best10Index.tolist())
+            parents = [population[parentAIndex], population[parentBIndex]]
 
-            offSpring = cls.hybrid(population, parents, bestEntityIndex, 2)  # 交叉
+            offSpring = cls.hybrid(costFun, population, parents, parentBIndex, fitnessList, 1)  # 交叉
             # if costFun(offSpring) <= fitnessList[motherIndex]:
             #     offSprings.append(offSpring)
 
@@ -96,11 +101,11 @@ class OptimizationAlgorithm:
 
 
     @classmethod
-    def hybrid(cls, population, parents, bestEntityIndex ,partition):
+    def hybrid(cls, costFun, population, parents, best10Index, fitnessList, partition):
         """
         两个个体交叉
         population: 整个种群
-        parents: 进行交叉的两个长辈
+        parents: 进行交叉的两个双亲
         partition: 交叉操作所需要进行交叉的序列长度的百分比，值为 int，若长度为 30%，则 partition=3
         return: 一个新的个体
         """
@@ -109,18 +114,21 @@ class OptimizationAlgorithm:
         endPositon = int(startPosition + len(parents[0]) * partition * 0.1)
 
         # mother, father = population[parents[0]], population[parents[1]]
-        mother, father = parents[0], parents[1]
-        child = cp.deepcopy(mother)
+        parentA, parentB = parents[0], parents[1]
+        child = cp.deepcopy(parentA)
 
         for position in range(startPosition, endPositon):
-            currentEle = father[position]
+            currentEle = parentB[position]
             child.remove(currentEle)
             child.insert(position, currentEle)
             pass
 
-        if rd.random() < 0.1:
-            child = cls.mutate(mother)
+        if rd.random() < 0.1:  # 变异
+            child = cls.mutate(child, 4)
             pass
+
+        # if costFun(child) > fitnessList[population.index(parentA)]:
+        #     child = parentA
 
         return child
 
@@ -128,15 +136,16 @@ class OptimizationAlgorithm:
 
 
     @classmethod
-    def mutate(cls, entity):
+    def mutate(cls, entity, partion):
         """
         变异操作
         entity: 变异的个体
+        partion: 变异时的编码的比例 4 = 40% 以此类推
         return: 变异后的个体
         """
-        partLen = len(entity) - int(len(entity) * 5 * 0.1)
+        partLen = len(entity) - int(len(entity) * partion * 0.1)
         start = rd.randrange(0, partLen)
-        end = int(start + len(entity) * 5 * 0.1 - 1)
+        end = int(start + len(entity) * partion * 0.1 - 1)
 
         temp = cp.deepcopy(entity) 
 
@@ -190,15 +199,17 @@ class OptimizationAlgorithm:
         # 计算整个种群的适应度值
         fitnessList = cls.allCost(costFun, population)
         # print(fitnessList)
+        # print(fitnessList)
 
         # 找到当前种群中最优的个体 
         bestEntityIndex = fitnessList.index( min(fitnessList) )  # 几下最优个体在种群中的索引值
-        print(population[bestEntityIndex])
+        best10Index = np.array(fitnessList).argsort()[0:10:1]
+        print(population[bestEntityIndex], fitnessList[bestEntityIndex])
 
         # 创建一个列表来保存每次迭代中种群中的最优适应度值 
         fitnessHistory = []
         
-        # TODO 遗传算法：
+        # 遗传算法：
         for i in range(iters):  # 迭代次数
             # print(population)
 
@@ -207,14 +218,16 @@ class OptimizationAlgorithm:
             # print(selectProb)
 
             # 生成新的种群
-            population = cls.genOffspring(costFun, population, selectProb, fitnessList, bestEntityIndex)
+            population = cls.genOffspring(costFun, population, selectProb, fitnessList, best10Index)
 
              # 计算新种群中所有个体的适应度值()
             fitnessList = cls.allCost(costFun, population)
 
             bestEntityIndex = fitnessList.index( min(fitnessList) )
+            best10Index = np.array(fitnessList).argsort()[0:10:1]
 
             fitnessHistory.append(min(fitnessList))
+            print(min(fitnessList))
 
 
             pass
@@ -237,6 +250,7 @@ def testCost(seq: list):
 
     pass
 
-OptimizationAlgorithm.ga(testCost, 15, 50, 500)
+# OptimizationAlgorithm.ga(enSimpleCode, 84, 300, 500)
+OptimizationAlgorithm.ga(testCost, 84, 300, 500)
 
 ####################################################################
