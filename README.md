@@ -18,7 +18,7 @@ commentjson
 
 ```python
 
-graph_of_spots = [
+graphOfSpots = [
     [1, 10, 9, 2.5],  # [ 级数, 起点(id), 终点(id), 时间]
     [1, 11, 9, 2.1],
     [2, 9, 5, 2.3],
@@ -31,12 +31,12 @@ graph_of_spots = [
     [7, 3, 7, 3.1]
 ]
 
-fold_id = 1  # 叠箱机的 id
+stackerID = 1  # 叠箱机的 id
 ```
 
 ```json
 {
-    "graph_of_spots": [
+    "graphOfSpots": [
         [1, 10, 9, 2.5],  
         [1, 11, 9, 2.1],
         [2, 9, 5, 2.3],
@@ -49,7 +49,7 @@ fold_id = 1  # 叠箱机的 id
         [7, 3, 7, 3.1]
     ],
 
-    "fold_id": 1
+    "stackerID": 1
 }
 
 ```

@@ -13,11 +13,11 @@ class GraphGenerator:
 
     @classmethod
     def getEdges(cls):
-        
+
         # TODO 辊道的运行速度,将其抽出为一个单独的函数
         speed = 0.33  # 辊道运行速度用于计算时间
 
-        data = cls.get_edge_data()
+        data = cls.getEdgeData()
         edges = []
         edgesAxis = []
         for spot in data:
@@ -73,7 +73,7 @@ class GraphGenerator:
 
 
     @classmethod
-    def get_edge_data(cls):
+    def getEdgeData(cls):
         """
         从数据库中查询节点的边权表
         type: 查询类型
@@ -86,7 +86,7 @@ class GraphGenerator:
 
 
     @classmethod
-    def gen_graph(cls, edgeSet):
+    def genGraph(cls, edgeSet):
         """
         根据边权表生成一个邻接矩阵
         edgeSet: 边权表

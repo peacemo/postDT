@@ -21,12 +21,13 @@ class Tools:
 
 
     @staticmethod
-    def stdOutput(level: list, nodes: list, pointsInfo: list) -> list:
+    def stdOutput(level: list, nodes: list, pointsInfo: list, stacker: int) -> list:
         """
         标准化输出: 将输出的边按层级和时间消耗排序, 层级升序, 时间降序
         level: 层级信息
         nodes: 顶点信息
         pointsInfo: 边信息
+        stacker: 叠箱机的 id
         return: 带有层级信息且排好序的边信息用作输出
         """
 
@@ -51,11 +52,13 @@ class Tools:
         pointsInfo = [points for points in pointsInfo if points[0] != float('inf')]  # 去除不连通的边
         # print(pointsInfo)
 
-        return pointsInfo
+        outputData = {'graphOfSpots' : pointsInfo, 'stackerID' : 1}
+
+        return outputData
         pass
 
     @staticmethod
-    def get_stacker(dvcDictionary):
+    def getStacker(dvcDictionary):
         """
         找到拆叠箱机的 id
         dvcDictionary: 设备 id 与其名称(类型)的对应字典

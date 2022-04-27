@@ -12,7 +12,7 @@ class OptimizationAlgorithm:
     
 
     @classmethod
-    def gen_population(cls, seqLen, entityCount) -> list:
+    def genPopulation(cls, seqLen, entityCount) -> list:
         """
         生成 entityCount 个从 1 ~ seqLen 的随机序列
         seqLen: 每一个序列的长度
@@ -185,7 +185,7 @@ class OptimizationAlgorithm:
         """
 
         # 生成初始种群
-        population = cls.gen_population(seqLen, entityCount)  # 生成初始种群
+        population = cls.genPopulation(seqLen, entityCount)  # 生成初始种群
 
         # 计算整个种群的适应度值
         fitnessList = cls.allCost(costFun, population)
