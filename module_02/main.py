@@ -26,6 +26,8 @@ def main():
 
     outputData = Tools.stdOutput(level, graph.nodes[0], points_info, stacker)
 
+    print(dvcDictionary, '\n')
+
     print(outputData)
 
     return outputData
