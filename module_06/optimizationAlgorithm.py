@@ -1,19 +1,52 @@
-from math import sqrt
 import random as rd
-from secrets import choice
-from statistics import mean
 import numpy as np
 import copy as cp
 from model_5 import *
+from mysql_deepLearningData import *
 
 class OptimizationAlgorithm:
 
     def __init__(self) -> None:
+        self.__ddjData  = ddjData_sql.getStacks()  # 获取堆垛机信息
+        thisCargoNow = CargoNow_sql.getGoodsLocationInfoVice()  # 获取货位信息
+        self.__thisCargoNow = thisCargoNow
+        self.__codeLength = len(thisCargoNow)  
         pass
+
+
+    # @property
+    # def ddjData
+
+
+    def outputGenerator(self, sequence, fitness):
+        R = 0
+        S = 0
+        H = 0
+        C = 0
+        CargoNow = self.__thisCargoNow
+        #CargoNow = CargoNow_sql.getGoodsLocationInfoVice()
+        for i in range(len(CargoNow)):
+            if(CargoNow[i]['s1'] == 0 and CargoNow[i]['s2'] == 0):
+                R += 1
+            elif(CargoNow[i]['s1'] == 0 and CargoNow[i]['s2'] == 1):
+                S += 1
+            elif(CargoNow[i]['s1'] == 1 and CargoNow[i]['s2'] == 0):
+                H += 1
+            elif(CargoNow[i]['s1'] == 1 and CargoNow[i]['s2'] == 1):
+                C += 1
+        
+        return {
+            'R': R,
+            'S': S,
+            'H': H,
+            'C': C,
+            'sequence': sequence,
+            'duration': fitness,
+            'runtime': 0
+        }
     
 
-    @classmethod
-    def genPopulation(cls, seqLen, entityCount) -> list:
+    def genPopulation(self, seqLen, entityCount) -> list:
         """
         生成 entityCount 个从 1 ~ seqLen 的随机序列
         seqLen: 每一个序列的长度
@@ -33,8 +66,7 @@ class OptimizationAlgorithm:
         pass
 
 
-    @classmethod
-    def allCost(cls, costFun, population):
+    def allCost(self, costFun, population):
         """
         计算整个群体的损失
         costFun: 损失函数
@@ -44,13 +76,12 @@ class OptimizationAlgorithm:
         fitnessList = [-1] * len(population)  # 初始化适应度值列表，用于记录每个个体对应的适应度值
         for i in range( len(fitnessList) ):
             # print(population[i])
-            fitnessList[i] = costFun(population[i])
+            fitnessList[i] = costFun(population[i], self.__ddjData, self.__thisCargoNow)
 
         return fitnessList
 
-    
-    @classmethod
-    def calSelectProb(cls, fitnessList):
+
+    def calSelectProb(self, fitnessList):
         """
         计算每一个个体被选择的概率
         fitnessList: 群体的适应度值list
@@ -63,9 +94,8 @@ class OptimizationAlgorithm:
         return p.tolist()
         pass
 
-    
-    @classmethod
-    def genOffspring(cls, costFun, population, selectProb, fitnessList, best10Index):
+
+    def genOffspring(self, costFun, population, selectProb, fitnessList, best10Index):
         """
         生成新的种群
         costFun: 单个个体的损失计算函数
@@ -81,13 +111,13 @@ class OptimizationAlgorithm:
 
         while len(offSprings) < len(population):
             
-            parentAIndex = cls.roulette(selectProb)  # 通过累积概率选择一个个体
+            parentAIndex = self.roulette(selectProb)  # 通过累积概率选择一个个体
             parentBIndex = rd.choice(best10Index.tolist())  # 从最优的10个个体中选择一个个体
             while parentAIndex == parentBIndex:
                 parentBIndex = rd.choice(best10Index.tolist())
             parents = [population[parentAIndex], population[parentBIndex]]
 
-            offSpring = cls.hybrid(costFun, population, parents, parentBIndex, fitnessList, 1)  # 交叉
+            offSpring = self.hybrid(costFun, population, parents, parentBIndex, fitnessList, 1)  # 交叉
             # if costFun(offSpring) <= fitnessList[motherIndex]:
             #     offSprings.append(offSpring)
 
@@ -100,8 +130,7 @@ class OptimizationAlgorithm:
         pass
 
 
-    @classmethod
-    def hybrid(cls, costFun, population, parents, best10Index, fitnessList, partition):
+    def hybrid(self, costFun, population, parents, best10Index, fitnessList, partition):
         """
         两个个体交叉
         population: 整个种群
@@ -124,7 +153,7 @@ class OptimizationAlgorithm:
             pass
 
         if rd.random() < 0.1:  # 变异
-            child = cls.mutate(child, 4)
+            child = self.mutate(child, 4)
             pass
 
         # if costFun(child) > fitnessList[population.index(parentA)]:
@@ -135,8 +164,7 @@ class OptimizationAlgorithm:
         pass
 
 
-    @classmethod
-    def mutate(cls, entity, partion):
+    def mutate(self, entity, partion):
         """
         变异操作
         entity: 变异的个体
@@ -156,8 +184,7 @@ class OptimizationAlgorithm:
         pass
 
 
-    @classmethod
-    def roulette(cls, selectProb):
+    def roulette(self, selectProb):
         """
         轮盘赌选择
         selectProb: 种群中每个个体的被选择概率
@@ -181,8 +208,7 @@ class OptimizationAlgorithm:
         return selection
 
 
-    @classmethod
-    def ga(cls, costFun, seqLen, entityCount=100, iters=50):
+    def ga(self, costFun, seqLen, entityCount=100, iters=50):
         """
         遗传算法找到最优序列
         costFun: 计算单个个体的损失函数
@@ -194,10 +220,11 @@ class OptimizationAlgorithm:
         """
 
         # 生成初始种群
-        population = cls.genPopulation(seqLen, entityCount)  # 生成初始种群
+        seqLen = self.__codeLength
+        population = self.genPopulation(seqLen, entityCount)  # 生成初始种群
 
         # 计算整个种群的适应度值
-        fitnessList = cls.allCost(costFun, population)
+        fitnessList = self.allCost(costFun, population)
         # print(fitnessList)
         # print(fitnessList)
 
@@ -214,14 +241,14 @@ class OptimizationAlgorithm:
             # print(population)
 
             # 根据适应度值计算每一个个体被选中的概率()
-            selectProb = cls.calSelectProb(fitnessList)
+            selectProb = self.calSelectProb(fitnessList)
             # print(selectProb)
 
             # 生成新的种群
-            population = cls.genOffspring(costFun, population, selectProb, fitnessList, best10Index)
+            population = self.genOffspring(costFun, population, selectProb, fitnessList, best10Index)
 
              # 计算新种群中所有个体的适应度值()
-            fitnessList = cls.allCost(costFun, population)
+            fitnessList = self.allCost(costFun, population)
 
             bestEntityIndex = fitnessList.index( min(fitnessList) )
             best10Index = np.array(fitnessList).argsort()[0:10:1]
@@ -234,14 +261,20 @@ class OptimizationAlgorithm:
 
         # print(fitnessHistory)
         print(population)
-        print("Best:\n", population[bestEntityIndex], "\n", fitnessList[bestEntityIndex])
+        # print("Best:\n", population[bestEntityIndex], "\n", fitnessList[bestEntityIndex])
+        result = self.outputGenerator(population[bestEntityIndex], fitnessList[bestEntityIndex])
+        print(result)
+
+        # 写入数据库
+        data = [result['R'], result['S'], result['H'], result['C'], result['duration']]
+        insertDeepLearningData(data)
 
         pass
 
 
     
 ####################################################################
-def testCost(seq: list):
+def testCost(seq: list, a):
     cost = 0
     for i in range(len(seq)):
         cost += pow( (i+1) - seq[i], 2 )
@@ -250,7 +283,10 @@ def testCost(seq: list):
 
     pass
 
-# OptimizationAlgorithm.ga(enSimpleCode, 84, 300, 500)
-OptimizationAlgorithm.ga(testCost, 84, 300, 500)
+optAlgo = OptimizationAlgorithm()
+# print(optAlgo.ddjData)
+optAlgo.ga(enSimpleCode, 84, 100, 10)
+
+# optAlgo.ga(testCost, 84, 300, 500)
 
 ####################################################################
