@@ -266,8 +266,8 @@ class OptimizationAlgorithm:
         print(result)
 
         # 写入数据库
-        data = [result['R'], result['S'], result['H'], result['C'], result['duration']]
-        insertDeepLearningData(data)
+        # data = [result['R'], result['S'], result['H'], result['C'], result['duration']]
+        # insertDeepLearningData(data)
 
         pass
 
@@ -285,7 +285,7 @@ def testCost(seq: list, a):
 
 optAlgo = OptimizationAlgorithm()
 # print(optAlgo.ddjData)
-optAlgo.ga(enSimpleCode, 84, 100, 10)
+optAlgo.ga(enSimpleCode, 84, 50, 100)
 
 # optAlgo.ga(testCost, 84, 300, 500)
 
