@@ -2,6 +2,7 @@ from utils.sqlTools import *
 import copy as cp
 import random as rd
 import json
+import sys
 
 
 def toList(inputDict: dict):
@@ -82,7 +83,9 @@ def genR(monData: dict):
     R = [0] * len(S)
     
     for assetType in range(1, len(S)):
-        R[assetType] = rd.randint(S[assetType] - L_1[assetType], D[assetType] + P_1[assetType] + P_2[assetType] + 1)
+        R[assetType] = rd.randint(S[assetType] - L_1[assetType], D[assetType] + P_1[assetType] + P_2[assetType])
+        if C[assetType] <= S[assetType]:
+            R[assetType] = rd.randint(S[assetType] - L_1[assetType], S[assetType])
     
     return R
     
@@ -104,7 +107,7 @@ def genCJ(monData: dict, R):
     CJ = [0] * len(S)
     
     for assetType in range(len(S)):
-        CJ[assetType] = rd.randint(R[assetType] - P_2[assetType], D[assetType] + P_1[assetType] + 1)
+        CJ[assetType] = rd.randint(R[assetType] - P_2[assetType], D[assetType] + P_1[assetType])
     
     return CJ 
     
@@ -140,7 +143,9 @@ def genPlan(monData, typeCount):
             s[dayi][type] = round(S[type] / 30)
             h[dayi][type] = s[dayi][type]
             c[dayi][type] = round(C[type] / 30)
-    
+
+            if type == 12: r[dayi][type] = 0
+
     return {
         'd': d,
         'cj': cj,
@@ -154,7 +159,7 @@ def genPlan(monData, typeCount):
     pass
 
 
-def adjustPlan(monPlan: dict, typeCount: int, days: int, monData: dict):
+def adjustPlan(monPlan: dict, typeCount: int, days: int, monData: dict, L=16119):
 
     try:
         S = monData['checkInfo']
@@ -210,11 +215,14 @@ def adjustPlan(monPlan: dict, typeCount: int, days: int, monData: dict):
                     s[day][type] = L_1[type] 
                 else: 
                     s[day][type] = L_1[type]
+            if day > 0:
+                if s[day][type] < r[day-1][type]:
+                    s[day][type] = r[day][type]
 
             L_1[type] = L_1[type] + r[day][type] - s[day][type]
 
 
-            # FIXME 这里如果调整，回库就和检定不相等了，所以先注释
+            # FIXME 这里如果调整，回库就和检定不相等，算法无法运行
             # if monPlan['h'][day][type] > H_0[type] + monPlan['s'][day][type]:
             #     print('----in if 4')
             #     monPlan['h'][day][type] = H_0[type] + monPlan['s'][day][type]
@@ -231,11 +239,17 @@ def adjustPlan(monPlan: dict, typeCount: int, days: int, monData: dict):
                     c[day][type] = L_2[type] 
                 else: 
                     c[day][type] = L_2[type]
+            if day > 0:
+                if c[day][type] < h[day-1][type]:
+                    c[day][type] = int(h[day][type] * (rd.randint(90, 100) / 100.0))
 
-            L_2[type] = L_2[type] + h[day][type] - h[day][type]
+            L_2[type] = L_2[type] + h[day][type] - c[day][type]
 
 
-            # TODO 立库库存总数约束
+            # 立库库存总数约束
+            if (L_1[type] + L_2[type] + r[day][type] - s[day][type] + h[day][type] - c[day][type]) > L:
+                print("立库爆仓")
+                sys.exit(0)
 
             # TODO 检定量总数约束
 
