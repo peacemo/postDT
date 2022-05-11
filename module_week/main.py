@@ -1,5 +1,5 @@
 from utils.sqlTools import *
-from planGenerator import *
+from utils.planGenerator import *
 import copy as cp
 import random as rd
 
@@ -7,7 +7,7 @@ import random as rd
 def main():
     typeCount = 29
     days = 30
-    planGenerator = PlanGenerator(typeCount, days)
+    planGenerator = PlanGenerator(typeCount, days, 16119)
     plan = planGenerator.getAFkPlan()
     print(plan)
     pass

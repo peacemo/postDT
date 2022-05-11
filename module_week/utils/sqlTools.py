@@ -1,8 +1,4 @@
-import string
-import ast
-from unittest import result
 import pymysql
-import json
 
 
 class MysqlTools:

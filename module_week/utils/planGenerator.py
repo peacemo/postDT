@@ -5,22 +5,34 @@ import json
 import sys
 
 class PlanGenerator:
-    def __init__(self, typeCount, days) -> None:
+    def __init__(self, typeCount, days, L) -> None:
+        """
+        对象初始化
+        typeCount: 总的货物类型
+        days: 总的天数
+        L: 立库容量
+        """
         self.__typeCount = typeCount
         self.__days = days
+        self.__L = 16119
         pass
 
 
     def getAFkPlan(self):
-        data = self.getData(self.__typeCount)
+        """
+        获取一个月度计划
+
+        return: 生成的月度计划，类型为字典
+        """
+        data = self.getData()
         if self.checkByMon(data):
             R = self.genR(data)
             CJ = self.genCJ(data, R)
             data['ruKu'] = R
             data['chouJian'] = CJ
-            monPlan = self.genPlan(data, self.__typeCount)
-            monPlan = self.adjustPlan(monPlan, self.__typeCount, self.__days, data)
-            output = self.genOutput(monPlan, self.__days)
+            monPlan = self.genPlan(data)
+            monPlan = self.adjustPlan(monPlan, data)
+            output = self.genOutput(monPlan)
 
             # with open('monPlan.json', 'w') as fp:
             #     json.dump(output, fp,  indent=4)
@@ -38,19 +50,22 @@ class PlanGenerator:
         return result
 
 
-    def getData(self, typeCount):
+    def getData(self):
+        """
+        从数据库中获取各种所需要的数据
+        """
         mysqlTools = MysqlTools()
-        cargoOld = mysqlTools.getCargoOld(typeCount)
-        cargoNew = mysqlTools.getCargoNew(typeCount)
+        cargoOld = mysqlTools.getCargoOld(self.__typeCount)
+        cargoNew = mysqlTools.getCargoNew(self.__typeCount)
         cargoEmpty = mysqlTools.getCargoEmpty()
 
-        whOld = mysqlTools.getWarehouseOld(typeCount)
-        whNew = mysqlTools.getWarehouseNew(typeCount)
+        whOld = mysqlTools.getWarehouseOld(self.__typeCount)
+        whNew = mysqlTools.getWarehouseNew(self.__typeCount)
         whEmpty = mysqlTools.getWarehouseEmpty()
 
-        arrivalInfo = mysqlTools.getArrivalInfo(typeCount)
-        checkInfo = mysqlTools.getCheckInfo(typeCount)
-        depositeInfo = mysqlTools.getDepositeInfo(typeCount)
+        arrivalInfo = mysqlTools.getArrivalInfo(self.__typeCount)
+        checkInfo = mysqlTools.getCheckInfo(self.__typeCount)
+        depositeInfo = mysqlTools.getDepositeInfo(self.__typeCount)
 
         # print(cargoOld, '\n', cargoNew, '\n', cargoEmpty, '\n', whOld, '\n', whNew, '\n', whEmpty, '\n', arrivalInfo, '\n', checkInfo, '\n', depositeInfo)
 
@@ -69,6 +84,12 @@ class PlanGenerator:
 
 
     def checkByMon(self, monData: dict):
+        """
+        检查月度计划的总量是否可行
+        monData: 原始的月度计划的字典（到检配，以及其他状态参数）
+
+        return: 是否可行 True / False  (bool)
+        """
         try:
             S = monData['checkInfo']
             L_1 = monData['cargoNew']
@@ -95,6 +116,12 @@ class PlanGenerator:
 
 
     def genR(self, monData: dict):
+        """
+        生成入库计划
+        monData: 原始的月度计划的字典（到检配，以及其他状态参数）
+
+        return: 月度每日的入库计划 list
+        """
         try:
             S = monData['checkInfo']
             L_1 = monData['cargoNew']
@@ -109,9 +136,10 @@ class PlanGenerator:
         R = [0] * len(S)
         
         for assetType in range(1, len(S)):
-            R[assetType] = rd.randint(S[assetType] - L_1[assetType], D[assetType] + P_1[assetType] + P_2[assetType])
+            lb = S[assetType] - L_1[assetType] if S[assetType] - L_1[assetType] >= 0 else 0
+            R[assetType] = rd.randint(lb, D[assetType] + P_1[assetType] + P_2[assetType])
             if C[assetType] <= S[assetType]:
-                R[assetType] = rd.randint(S[assetType] - L_1[assetType], S[assetType])
+                R[assetType] = rd.randint(lb, S[assetType])
         
         return R
         
@@ -119,6 +147,12 @@ class PlanGenerator:
 
 
     def genCJ(self, monData: dict, R):
+        """
+        生成月度的每日抽检计划
+        monData: 原始的月度计划的字典（到检配，以及其他状态参数）
+
+        return: 生成的月度每日抽检计划 list
+        """
         try:
             S = monData['checkInfo']
             L_1 = monData['cargoNew']
@@ -133,6 +167,7 @@ class PlanGenerator:
         CJ = [0] * len(S)
         
         for assetType in range(len(S)):
+            lb = R[assetType] - P_2[assetType] if R[assetType] - P_2[assetType] >=0 else 0
             CJ[assetType] = rd.randint(R[assetType] - P_2[assetType], D[assetType] + P_1[assetType])
         
         return CJ 
@@ -140,7 +175,13 @@ class PlanGenerator:
         pass
 
 
-    def genPlan(self, monData, typeCount):
+    def genPlan(self, monData):
+        """
+        生成月度计划
+        monData: 原计划
+
+        return: 生成的优化计划
+        """
         try:
             S = monData['checkInfo']
             L_1 = monData['cargoNew']
@@ -154,12 +195,12 @@ class PlanGenerator:
         except:
             return False
         
-        d = [ [0] * (typeCount+1) for i in range(30)]
-        cj = [ [0] * (typeCount+1) for i in range(30)]
-        r = [ [0] * (typeCount+1) for i in range(30)]
-        s = [ [0] * (typeCount+1) for i in range(30)]
-        h = [ [0] * (typeCount+1) for i in range(30)]
-        c = [ [0] * (typeCount+1) for i in range(30)]
+        d = [ [0] * (self.__typeCount+1) for i in range(30)]
+        cj = [ [0] * (self.__typeCount+1) for i in range(30)]
+        r = [ [0] * (self.__typeCount+1) for i in range(30)]
+        s = [ [0] * (self.__typeCount+1) for i in range(30)]
+        h = [ [0] * (self.__typeCount+1) for i in range(30)]
+        c = [ [0] * (self.__typeCount+1) for i in range(30)]
 
         for dayi in range(30):  # 对计划总量进行均分
             for type in range(len(S)):
@@ -185,8 +226,15 @@ class PlanGenerator:
         pass
 
 
-    def adjustPlan(self, monPlan: dict, typeCount: int, days: int, monData: dict, L=16119):
+    def adjustPlan(self, monPlan: dict, monData: dict):
+        """
+        调整生成的月度计划，保证可行性
+        monPlan: 生成的月度计划
+        monData: 原始的月度计划及其库存状态
 
+        return: 调整后的 monPlan
+
+        """
         try:
             S = monData['checkInfo']
             L_1 = monData['cargoNew']
@@ -197,7 +245,7 @@ class PlanGenerator:
             P_2 = monData['whOld']
             R = monData['ruKu']
             CJ = monData['chouJian']
-            H_0 = [0] * (typeCount + 1)
+            H_0 = [0] * (self.__typeCount + 1)
         except:
             return False
         
@@ -212,11 +260,11 @@ class PlanGenerator:
         except:
             return False
 
-        for day in range(days):  # 按天遍历
-            for type in range(1, typeCount + 1):  # 按每天的每种类型遍历
+        for day in range(self.__days):  # 按天遍历
+            for type in range(1, self.__typeCount + 1):  # 按每天的每种类型遍历
                 if r[day][type] > P_2[type]:  # 如果不满足 入库<=平库已抽检
                     # print('----in if 1')
-                    if day < days-1:
+                    if day < self.__days-1:
                         r[day+1][type] += r[day][type] - P_2[type]  # 则将今天的入库不够的部分移动到后一天
                         r[day][type] = P_2[type]  # 并把今天所有的平库已抽检都入库
                     else: 
@@ -224,7 +272,7 @@ class PlanGenerator:
 
                 if cj[day][type] > P_1[type] + d[day][type]:
                     # print('----in if 2')
-                    if day < days-1:
+                    if day < self.__days-1:
                         cj[day+1][type] += cj[day][type] - (P_1[type] + d[day][type])  
                         cj[day][type] = P_1[type] + d[day][type]  
                     else: 
@@ -236,7 +284,7 @@ class PlanGenerator:
 
                 if s[day][type] > L_1[type]:
                     # print('----in if 3')
-                    if day < days-1:
+                    if day < self.__days-1:
                         s[day+1][type] += s[day][type] - (L_1[type])  
                         s[day][type] = L_1[type] 
                     else: 
@@ -260,7 +308,7 @@ class PlanGenerator:
 
                 if c[day][type] > L_2[type]:
                     # print('----in if 5')
-                    if day < days-1:
+                    if day < self.__days-1:
                         c[day+1][type] += c[day][type] - (L_2[type])  
                         c[day][type] = L_2[type] 
                     else: 
@@ -273,7 +321,7 @@ class PlanGenerator:
 
 
                 # 立库库存总数约束
-                if (L_1[type] + L_2[type] + r[day][type] - s[day][type] + h[day][type] - c[day][type]) > L:
+                if (L_1[type] + L_2[type] + r[day][type] - s[day][type] + h[day][type] - c[day][type]) > self.__L:
                     print("立库爆仓")
                     sys.exit(0)
 
@@ -285,7 +333,13 @@ class PlanGenerator:
         pass
 
 
-    def genOutput(self, monPlan, days):
+    def genOutput(self, monPlan):
+        """
+        格式化输出
+        monPlan: 生成的月度计划
+
+        return: 格式化字典输出
+        """
         # print(monPlan)
         d = []
         cj = []
@@ -294,7 +348,7 @@ class PlanGenerator:
         h = []
         c = []
 
-        for i in range(days):
+        for i in range(self.__days):
             dDict = {}
             dDict['14'] = monPlan['d'][i][14]
             dDict['10'] = monPlan['d'][i][10]
