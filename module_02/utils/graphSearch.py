@@ -1,4 +1,3 @@
-from webbrowser import get
 from entities.AMGraph import *
 from queue import Queue
 
