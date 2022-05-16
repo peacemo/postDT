@@ -1,35 +1,33 @@
 import random as rd
 import numpy as np
+import math
 import copy as cp
 
 from module_week.preMod.test import calFitness
+from module_week.utils.planGenerator import PlanGenerator
 
 
 class OptimizationAlgorithm:
 
-    def __init__(self) -> None:
+    def __init__(self, typeCount, days) -> None:
+        self.__typeCount = typeCount
+        self.__days = days
         pass
 
     # @property
     # def ddjData
 
     def outputGenerator(self, sequence, fitness):
+        return ...
         pass
 
-    def genPopulation(self, seqLen, entityCount) -> list:
-        """
-        生成 entityCount 个从 1 ~ seqLen 的随机序列
-        seqLen: 每一个序列的长度
-        entityCount: 种群大小
-        return: 种群（entityCount 个随机打乱的序列，类型为 list）
-        """
+    def genPopulation(self, entityCount) -> list:
+        planGenerator = PlanGenerator(self.__typeCount, self.__days, 16119)
         population = []
         for i in range(entityCount):
-            # 生成 entityCount 个从 1 ~ seqLen 的随机序列
-            entity = list(range(1, (seqLen + 1), 1))
-            rd.shuffle(entity)
+            # 生成 entityCount 个个体
+            entity = planGenerator.getAFkPlan()
             population.append(entity)
-
             # print(population)
 
         return population
@@ -45,7 +43,7 @@ class OptimizationAlgorithm:
         fitnessList = [-1] * len(population)  # 初始化适应度值列表，用于记录每个个体对应的适应度值
         for i in range(len(fitnessList)):
             # print(population[i])
-            fitnessList[i] = costFun(population[i], self.__ddjData, self.__thisCargoNow)
+            fitnessList[i] = costFun(population[i])
 
         return fitnessList
 
@@ -72,9 +70,24 @@ class OptimizationAlgorithm:
         bestEntityIndex: 群体中最优的个体的索引
         return: 新的种群
         """
+        offsprings = []  # 后代个体
+        for index in best10Index:
+            offsprings.append(population[index])
+
+        while len(offsprings) < len(population):
+            parentAIndex = self.roulette(selectProb)
+            parentBIndex = rd.choice(best10Index.tolist())
+            while parentAIndex == parentBIndex:
+                parentBIndex = rd.choice(best10Index.tolist())
+            parents = [population[parentAIndex], population[parentBIndex]]
+
+            offspring = self.hybrid(costFun=costFun, population=population, parents=parents, fitnessList=fitnessList, partion = 3)
+            pass
+
+        return offsprings
         pass
 
-    def hybrid(self, costFun, population, parents, best10Index, fitnessList, partition):
+    def hybrid(self, costFun, population, parents, fitnessList, partion):
         """
         两个个体交叉
         population: 整个种群
@@ -82,6 +95,15 @@ class OptimizationAlgorithm:
         partition: 交叉操作所需要进行交叉的序列长度的百分比，值为 int，若长度为 30%，则 partition=3
         return: 一个新的个体
         """
+        planGrt = PlanGenerator(self.__typeCount, self.__days, 16119)
+        adjustDays = rd.choices([])
+        # mother, father = population[parents[0]], population[parents[1]]
+        parentA, parentB = parents[0], parents[1]
+        child = cp.deepcopy(parentA)
+
+
+
+        return child
         pass
 
     def mutate(self, entity, partion):
@@ -128,8 +150,8 @@ class OptimizationAlgorithm:
         """
 
         # 生成初始种群
-        seqLen = self.__codeLength
-        population = self.genPopulation(seqLen, entityCount)  # 生成初始种群
+        # seqLen = self.__codeLength
+        population = self.genPopulation(entityCount)  # 生成初始种群
 
         # 计算整个种群的适应度值
         fitnessList = self.allCost(costFun, population)
@@ -138,7 +160,7 @@ class OptimizationAlgorithm:
 
         # 找到当前种群中最优的个体 
         bestEntityIndex = fitnessList.index(min(fitnessList))  # 几下最优个体在种群中的索引值
-        best10Index = np.array(fitnessList).argsort()[0:10:1]
+        best10Index = np.array(fitnessList).argsort()[0: math.ceil(len(fitnessList)*0.1): 1]
         print(population[bestEntityIndex], fitnessList[bestEntityIndex])
 
         # 创建一个列表来保存每次迭代中种群中的最优适应度值 
@@ -180,19 +202,23 @@ class OptimizationAlgorithm:
 
 
 ####################################################################
-def testCost(seq: list, a):
-    cost = 0
-    for i in range(len(seq)):
-        cost += pow((i + 1) - seq[i], 2)
-    if cost == 0: cost = 0.1
-    return cost
-
+def testCost(pop):
+    fit = 0
+    print(pop)
+    for i in range(len(pop['d'])):
+        r, s, h, c = 0, 0, 0, 0
+        r = sum(pop['r'][i].values())
+        s = sum(pop['s'][i].values())
+        h = sum(pop['h'][i].values())
+        c = sum(pop['c'][i].values())
+        fit += int(calFitness([r, s, h, c]))
+    return fit
     pass
 
 
-# optAlgo = OptimizationAlgorithm()
+optAlgo = OptimizationAlgorithm(typeCount=29, days=30)
 # # print(optAlgo.ddjData)
-# optAlgo.ga(testCost, 84, 50, 100)
+optAlgo.ga(testCost, 84, 5, 100)
 
 # optAlgo.ga(testCost, 84, 300, 500)
 calFitness([250, 251, 251, 250])
