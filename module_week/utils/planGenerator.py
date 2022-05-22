@@ -19,6 +19,10 @@ class PlanGenerator:
         self.__data = self.getData()
         pass
 
+    @property
+    def data(self):
+        return self.__data
+
     def getAFkPlan(self):
         """
         获取一个月度计划
@@ -35,8 +39,8 @@ class PlanGenerator:
             monPlan = self.adjustPlan(monPlan, data)
             output = self.genOutput(monPlan)
 
-            # with open('monPlan.json', 'w') as fp:
-            #     json.dump(output, fp,  indent=4)
+            with open('./monPlan.json', 'w') as fp:
+                json.dump(output, fp,  indent=4)
 
             return output
             pass
@@ -89,6 +93,7 @@ class PlanGenerator:
 
         return: 是否可行 True / False  (bool)
         """
+        isOkay = False
         try:
             S = monData['checkInfo']
             L_1 = monData['cargoNew']
@@ -98,20 +103,23 @@ class PlanGenerator:
             P_1 = monData['whNew']
             P_2 = monData['whOld']
         except:
-            return False
+            return isOkay
 
         if len(S) != len(L_2) or len(S) != len(C) or len(L_2) != len(C):
             # 若输入的数据中，对应的资产种类数不匹配，则直接返回 False
-            return False
+            return isOkay
 
         for assetType in range(1, len(S)):
-            if S[assetType] + L_2[assetType] >= C[assetType] and \
-                    D[assetType] + P_1[assetType] + P_2[assetType] + L_1[assetType] >= S[assetType]:
+            cond0 = S[assetType] + L_2[assetType] >= C[assetType]
+            cond1 = D[assetType] + P_1[assetType] + P_2[assetType] + L_1[assetType] >= S[assetType]
+            if cond0 and cond1:
+                isOkay = True
                 continue
             else:
-                return False
+                print("货物类型", assetType, "不满足")
+                isOkay = False
 
-        return True
+        return isOkay
 
     def genR(self, monData: dict):
         """
@@ -137,7 +145,7 @@ class PlanGenerator:
             lb = S[assetType] - L_1[assetType] if S[assetType] - L_1[assetType] >= 0 else 0
             R[assetType] = rd.randint(lb, D[assetType] + P_1[assetType] + P_2[assetType])
             if C[assetType] <= S[assetType]:
-                R[assetType] = rd.randint(lb, S[assetType])
+                R[assetType] = rd.randint(lb, min(S[assetType], D[assetType] + P_1[assetType] + P_2[assetType]))
 
         return R
 
@@ -165,7 +173,8 @@ class PlanGenerator:
 
         for assetType in range(len(S)):
             lb = R[assetType] - P_2[assetType] if R[assetType] - P_2[assetType] >= 0 else 0
-            CJ[assetType] = rd.randint(R[assetType] - P_2[assetType], D[assetType] + P_1[assetType])
+            rb = D[assetType] + P_1[assetType]
+            CJ[assetType] = rd.randint(lb, rb)
 
         return CJ
 
@@ -313,6 +322,9 @@ class PlanGenerator:
                 # 立库库存总数约束
                 if (L_1[type] + L_2[type] + r[day][type] - s[day][type] + h[day][type] - c[day][type]) > self.__L:
                     print("立库爆仓")
+                    sys.exit(0)
+                if (L_1[type] + L_2[type] + r[day][type] - s[day][type] + h[day][type] - c[day][type]) < 0:
+                    print("立库缺货")
                     sys.exit(0)
 
                 # TODO 检定量总数约束

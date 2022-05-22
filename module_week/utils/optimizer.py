@@ -78,16 +78,18 @@ class OptimizationAlgorithm:
             parentAIndex = self.roulette(selectProb)
             parentBIndex = rd.choice(best10Index.tolist())
             while parentAIndex == parentBIndex:
-                parentBIndex = rd.choice(best10Index.tolist())
+                parentAIndex = self.roulette(selectProb)
             parents = [population[parentAIndex], population[parentBIndex]]
 
-            offspring = self.hybrid(costFun=costFun, population=population, parents=parents, fitnessList=fitnessList, partion = 3)
+            offspring = self.hybrid(costFun=costFun, population=population, parents=parents, fitnessList=fitnessList, partion = (int(self.__days / 10) if int(self.__days / 10) > 0 else 1))
+
+            offsprings.append(offspring)
             pass
 
         return offsprings
         pass
 
-    def hybrid(self, costFun, population, parents, fitnessList, partion):
+    def hybrid(self, parents, partion):
         """
         两个个体交叉
         population: 整个种群
@@ -96,12 +98,19 @@ class OptimizationAlgorithm:
         return: 一个新的个体
         """
         planGrt = PlanGenerator(self.__typeCount, self.__days, 16119)
-        adjustDays = rd.choices([])
+        adjustDays = rd.choices([day for day in range(self.__days)], k=partion)
         # mother, father = population[parents[0]], population[parents[1]]
         parentA, parentB = parents[0], parents[1]
         child = cp.deepcopy(parentA)
 
+        for day in adjustDays:
+            exOption = rd.choice(['cj', 'r'])
+            child[exOption][day] = parentB[exOption][day]
+            pass
+        planGrt.adjustPlan(child, cp.deepcopy(planGrt.data))
 
+        # if rd.random() < 0.1:
+        #     child = self.mutate(child, partion = (int(self.__days / 10) if int(self.__days / 2) > 0 else 1))
 
         return child
         pass
@@ -138,11 +147,10 @@ class OptimizationAlgorithm:
 
         return selection
 
-    def ga(self, costFun, seqLen, entityCount=100, iters=50):
+    def ga(self, costFun, entityCount=100, iters=50):
         """
         遗传算法找到最优序列
         costFun: 计算单个个体的损失函数
-        seqLen: 单个个体的编码长度
         entityCount: 种群中的个体数量
         iters: 遗传算法迭代的次数
 
@@ -204,7 +212,7 @@ class OptimizationAlgorithm:
 ####################################################################
 def testCost(pop):
     fit = 0
-    print(pop)
+    # print(pop)
     for i in range(len(pop['d'])):
         r, s, h, c = 0, 0, 0, 0
         r = sum(pop['r'][i].values())
@@ -218,9 +226,9 @@ def testCost(pop):
 
 optAlgo = OptimizationAlgorithm(typeCount=29, days=30)
 # # print(optAlgo.ddjData)
-optAlgo.ga(testCost, 84, 5, 100)
+optAlgo.ga(testCost, 50, 100)
 
 # optAlgo.ga(testCost, 84, 300, 500)
-calFitness([250, 251, 251, 250])
+# calFitness([250, 251, 251, 250])
 
 ####################################################################
