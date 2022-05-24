@@ -39,7 +39,7 @@ class PlanGenerator:
             monPlan = self.adjustPlan(monPlan, data)
             output = self.genOutput(monPlan)
 
-            with open('./monPlan.json', 'w') as fp:
+            with open('./monPlan_temp.json', 'w') as fp:
                 json.dump(output, fp,  indent=4)
 
             return output
@@ -200,21 +200,21 @@ class PlanGenerator:
         except:
             return False
 
-        d = [[0] * (self.__typeCount + 1) for i in range(30)]
-        cj = [[0] * (self.__typeCount + 1) for i in range(30)]
-        r = [[0] * (self.__typeCount + 1) for i in range(30)]
-        s = [[0] * (self.__typeCount + 1) for i in range(30)]
-        h = [[0] * (self.__typeCount + 1) for i in range(30)]
-        c = [[0] * (self.__typeCount + 1) for i in range(30)]
+        d = [[0] * (self.__typeCount + 1) for i in range(self.__days)]
+        cj = [[0] * (self.__typeCount + 1) for i in range(self.__days)]
+        r = [[0] * (self.__typeCount + 1) for i in range(self.__days)]
+        s = [[0] * (self.__typeCount + 1) for i in range(self.__days)]
+        h = [[0] * (self.__typeCount + 1) for i in range(self.__days)]
+        c = [[0] * (self.__typeCount + 1) for i in range(self.__days)]
 
-        for dayi in range(30):  # 对计划总量进行均分
+        for dayi in range(self.__days):  # 对计划总量进行均分
             for type in range(len(S)):
-                d[dayi][type] = round(D[type] / 30)
-                cj[dayi][type] = round(CJ[type] / 30)
-                r[dayi][type] = round(R[type] / 30)
-                s[dayi][type] = round(S[type] / 30)
+                d[dayi][type] = round(D[type] / self.__days)
+                cj[dayi][type] = round(CJ[type] / self.__days)
+                r[dayi][type] = round(R[type] / self.__days)
+                s[dayi][type] = round(S[type] / self.__days)
                 h[dayi][type] = s[dayi][type]
-                c[dayi][type] = round(C[type] / 30)
+                c[dayi][type] = round(C[type] / self.__days)
 
                 if type == 12: r[dayi][type] = 0
 

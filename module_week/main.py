@@ -2,6 +2,7 @@ from utils.sqlTools import *
 from utils.planGenerator import *
 import copy as cp
 import random as rd
+from utils.optimizer import *
 
 
 def main():
@@ -10,6 +11,10 @@ def main():
     planGenerator = PlanGenerator(typeCount, days, 16119)
     plan = planGenerator.getAFkPlan()
     print(plan)
+
+#     optAlgo = OptimizationAlgorithm(typeCount=29, days=30)
+# # # print(optAlgo.ddjData)
+#     optAlgo.ga(testCost, 50, 100)
     pass
 
 
