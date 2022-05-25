@@ -8,8 +8,13 @@ from module_week.utils.planGenerator import PlanGenerator
 
 
 class OptimizationAlgorithm:
-
     def __init__(self, typeCount, days) -> None:
+        """初始化函数
+
+        Args:
+            typeCount (int): 货物总索引数
+            days (int): 计划总天数
+        """
         self.__typeCount = typeCount
         self.__days = days
         pass
@@ -22,6 +27,14 @@ class OptimizationAlgorithm:
         pass
 
     def genPopulation(self, entityCount) -> list:
+        """生成初始总群
+
+        Args:
+            entityCount (int): 种群规模、个体数
+
+        Returns:
+            list: 由 entitiCount 个个体构成的列表（整个种群）
+        """
         planGenerator = PlanGenerator(self.__typeCount, self.__days, 16119)
         population = []
         for i in range(entityCount):
@@ -34,11 +47,14 @@ class OptimizationAlgorithm:
         pass
 
     def allCost(self, costFun, population):
-        """
-        计算整个群体的损失
-        costFun: 损失函数
-        population: 整个群体
-        return: 群体中每一个个体的适应度值: list
+        """计算整个种群中每个个体的适应度值
+
+        Args:
+            costFun (fun): 单个个体的适应度值计算函数
+            population (list): 整个种群
+
+        Returns:
+            list: 种群中每个个体的适应度值所构成的列表
         """
         fitnessList = [-1] * len(population)  # 初始化适应度值列表，用于记录每个个体对应的适应度值
         for i in range(len(fitnessList)):
@@ -47,11 +63,14 @@ class OptimizationAlgorithm:
 
         return fitnessList
 
-    def calSelectProb(self, fitnessList):
-        """
-        计算每一个个体被选择的概率
-        fitnessList: 群体的适应度值list
-        return: 每个个体被选择的概率
+    def calSelectProb(self, fitnessList: list) -> list:
+        """计算每个个体被选中的概率
+
+        Args:
+            fitnessList (list): 适应度值列表
+
+        Returns:
+            list: 每个个体被选中的概率
         """
         # fitnessAry = np.array(fitnessList)
         fitnessAry = 1 / np.array(fitnessList)
@@ -60,15 +79,18 @@ class OptimizationAlgorithm:
         return p.tolist()
         pass
 
-    def genOffspring(self, costFun, population, selectProb, fitnessList, best10Index):
-        """
-        生成新的种群
-        costFun: 单个个体的损失计算函数
-        population: 整个种群
-        selectProb: 每个个体的被选择概率
-        fitnessList: 群体的适应度值
-        bestEntityIndex: 群体中最优的个体的索引
-        return: 新的种群
+    def genOffspring(self, costFun: function, population: list, selectProb: list, fitnessList: list, best10Index: list) -> list:
+        """生成新的种群
+
+        Args:
+            costFun (function): 单个个体的损失计算函数
+            population (list): 整个种群
+            selectProb (list): 每个个体的被选择概率
+            fitnessList (list): 群体的适应度值
+            best10Index (list): 群体中最优的个体的索引
+
+        Returns:
+            list: 新的种群
         """
         offsprings = []  # 后代个体
         for index in best10Index:
@@ -89,13 +111,16 @@ class OptimizationAlgorithm:
         return offsprings
         pass
 
-    def hybrid(self, parents, partion):
-        """
-        两个个体交叉
-        population: 整个种群
-        parents: 进行交叉的两个双亲
-        partition: 交叉操作所需要进行交叉的序列长度的百分比，值为 int，若长度为 30%，则 partition=3
-        return: 一个新的个体
+    def hybrid(self, parents: list, partion: int) -> list:
+        """两个个体交叉
+
+        Args:
+            parents (list): 进行交叉的两个双亲
+            partion (int): 交叉操作所需要进行交叉的序列长度的百分比，
+                            值为 int，若长度为 30%，则 partition=3
+
+        Returns:
+            list: 一个新的个体
         """
         planGrt = PlanGenerator(self.__typeCount, self.__days, 16119)
         adjustDays = rd.choices([day for day in range(self.__days)], k=partion)
@@ -124,11 +149,14 @@ class OptimizationAlgorithm:
         """
         pass
 
-    def roulette(self, selectProb):
-        """
-        轮盘赌选择
-        selectProb: 种群中每个个体的被选择概率
-        return: 被选中的个体的索引值
+    def roulette(self, selectProb: list) -> int:
+        """轮盘赌选择一个个体的索引值
+
+        Args:
+            selectProb (list): 种群中每个个体的被选择概率
+
+        Returns:
+            int: 被选中的个体的索引值
         """
         selection = -1
         p = rd.uniform(0, sum(selectProb))
@@ -147,16 +175,14 @@ class OptimizationAlgorithm:
 
         return selection
 
-    def ga(self, costFun, entityCount=100, iters=50):
-        """
-        遗传算法找到最优序列
-        costFun: 计算单个个体的损失函数
-        entityCount: 种群中的个体数量
-        iters: 遗传算法迭代的次数
+    def ga(self, costFun: function, entityCount=100, iters=50):
+        """遗传算法找到最优序列
 
-        return: 最优的编码以及它的适应度值
+        Args:
+            costFun (function): 计算单个个体的损失函数
+            entityCount (int, optional): 种群中的个体数量. Defaults to 100.
+            iters (int, optional): 遗传算法迭代的次数. Defaults to 50.
         """
-
         # 生成初始种群
         # seqLen = self.__codeLength
         population = self.genPopulation(entityCount)  # 生成初始种群

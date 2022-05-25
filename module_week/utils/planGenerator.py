@@ -6,7 +6,7 @@ from module_week.utils.sqlTools import MysqlTools
 
 
 class PlanGenerator:
-    def __init__(self, typeCount, days, L) -> None:
+    def __init__(self, typeCount=29, days=30, L=16119) -> None:
         """
         对象初始化
         typeCount: 总的货物类型
@@ -39,8 +39,8 @@ class PlanGenerator:
             monPlan = self.adjustPlan(monPlan, data)
             output = self.genOutput(monPlan)
 
-            with open('./monPlan_temp.json', 'w') as fp:
-                json.dump(output, fp,  indent=4)
+            # with open('./monPlan_temp.json', 'w') as fp:
+            #     json.dump(output, fp,  indent=4)
 
             return output
             pass
