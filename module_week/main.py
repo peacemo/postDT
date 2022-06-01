@@ -7,7 +7,7 @@ from utils.optimizer import *
 
 def main():
     typeCount = 29
-    days = 30
+    days = 35
     planGenerator = PlanGenerator(typeCount, days, 16119)
     plan = planGenerator.getAFkPlan()
     print(plan)

@@ -3,7 +3,7 @@ import numpy as np
 import math
 import copy as cp
 
-from module_week.preMod.test import calFitness
+from module_week.preMod.FitnessCalculator import *
 from module_week.utils.planGenerator import PlanGenerator
 
 
@@ -79,7 +79,7 @@ class OptimizationAlgorithm:
         return p.tolist()
         pass
 
-    def genOffspring(self, costFun: function, population: list, selectProb: list, fitnessList: list, best10Index: list) -> list:
+    def genOffspring(self, costFun, population: list, selectProb: list, fitnessList: list, best10Index: list) -> list:
         """生成新的种群
 
         Args:
@@ -103,7 +103,7 @@ class OptimizationAlgorithm:
                 parentAIndex = self.roulette(selectProb)
             parents = [population[parentAIndex], population[parentBIndex]]
 
-            offspring = self.hybrid(costFun=costFun, population=population, parents=parents, fitnessList=fitnessList, partion = (int(self.__days / 10) if int(self.__days / 10) > 0 else 1))
+            offspring = self.hybrid(parents=parents, partion = (int(self.__days / 10) if int(self.__days / 10) > 0 else 1))
 
             offsprings.append(offspring)
             pass
@@ -175,7 +175,7 @@ class OptimizationAlgorithm:
 
         return selection
 
-    def ga(self, costFun: function, entityCount=100, iters=50):
+    def ga(self, costFun, entityCount=100, iters=50):
         """遗传算法找到最优序列
 
         Args:
@@ -236,25 +236,14 @@ class OptimizationAlgorithm:
 
 
 ####################################################################
-def testCost(pop):
-    fit = 0
-    # print(pop)
-    for i in range(len(pop['d'])):
-        r, s, h, c = 0, 0, 0, 0
-        r = sum(pop['r'][i].values())
-        s = sum(pop['s'][i].values())
-        h = sum(pop['h'][i].values())
-        c = sum(pop['c'][i].values())
-        fit += int(calFitness([r, s, h, c]))
-    return fit
-    pass
 
-
-optAlgo = OptimizationAlgorithm(typeCount=29, days=30)
+# optAlgo = OptimizationAlgorithm(typeCount=29, days=8)
 # # print(optAlgo.ddjData)
-optAlgo.ga(testCost, 50, 100)
-
-# optAlgo.ga(testCost, 84, 300, 500)
-# calFitness([250, 251, 251, 250])
+# fitnessCalculator = FitnessCalculator()
+# optAlgo.ga(
+#     costFun=fitnessCalculator.testCost, 
+#     entityCount=50, 
+#     iters=100
+# )
 
 ####################################################################

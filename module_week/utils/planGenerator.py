@@ -30,7 +30,9 @@ class PlanGenerator:
         return: 生成的月度计划，类型为字典
         """
         data = cp.deepcopy(self.__data)
-        if self.checkByMon(data):
+        isOkay, monData = self.checkByMon(monData=data, isSpl=True)
+        data = monData
+        if isOkay:
             R = self.genR(data)
             CJ = self.genCJ(data, R)
             data['ruKu'] = R
@@ -86,7 +88,7 @@ class PlanGenerator:
         }
         pass
 
-    def checkByMon(self, monData: dict):
+    def checkByMon(self, monData: dict, isSpl = False):
         """
         检查月度计划的总量是否可行
         monData: 原始的月度计划的字典（到检配，以及其他状态参数）
@@ -111,15 +113,29 @@ class PlanGenerator:
 
         for assetType in range(1, len(S)):
             cond0 = S[assetType] + L_2[assetType] >= C[assetType]
-            cond1 = D[assetType] + P_1[assetType] + P_2[assetType] + L_1[assetType] >= S[assetType]
-            if cond0 and cond1:
+            if cond0:
                 isOkay = True
-                continue
-            else:
-                print("货物类型", assetType, "不满足")
+            else: 
                 isOkay = False
+                print("货物类型", assetType, "的送检数量与立库成品数量比配送数量少", abs(S[assetType] + L_2[assetType] - C[assetType]), '垛')
+                if isSpl:
+                    S[assetType] += C[assetType] - (S[assetType] + L_2[assetType])
+                    print('已调整送检数量')
 
-        return isOkay
+            cond1 = D[assetType] + P_1[assetType] + P_2[assetType] + L_1[assetType] >= S[assetType]
+            if cond1:
+                isOkay = True
+            else: 
+                isOkay = False
+                print("货物类型", assetType, "到货 + 平库 + 立库未检比送检数量少", abs(D[assetType] + P_1[assetType] + P_2[assetType] + L_1[assetType] - S[assetType]), '垛')
+                if isSpl:
+                    P_2[assetType] += S[assetType] - (D[assetType] + P_1[assetType] + P_2[assetType] + L_1[assetType])
+                    print('已调整平库数量')
+
+            if isSpl:
+                isOkay = True
+
+        return [isOkay, monData]
 
     def genR(self, monData: dict):
         """
@@ -321,11 +337,11 @@ class PlanGenerator:
 
                 # 立库库存总数约束
                 if (L_1[type] + L_2[type] + r[day][type] - s[day][type] + h[day][type] - c[day][type]) > self.__L:
-                    print("立库爆仓")
-                    sys.exit(0)
+                    print("立库爆仓", day+1, type)
+                    #sys.exit(0)
                 if (L_1[type] + L_2[type] + r[day][type] - s[day][type] + h[day][type] - c[day][type]) < 0:
-                    print("立库缺货")
-                    sys.exit(0)
+                    print("立库缺货", day+1, type)
+                    #sys.exit(0)
 
                 # TODO 检定量总数约束
 
@@ -351,32 +367,38 @@ class PlanGenerator:
         for i in range(self.__days):
             dDict = {'14': monPlan['d'][i][14], '10': monPlan['d'][i][10], '12': monPlan['d'][i][12],
                      '13': monPlan['d'][i][13], '11': monPlan['d'][i][11], '15': monPlan['d'][i][15],
-                     '16': monPlan['d'][i][16]}
+                     '16': monPlan['d'][i][16], '17': monPlan['d'][i][17], '18': monPlan['d'][i][18],
+                     '19': monPlan['d'][i][19]}
             d.append(dDict)
 
             cjDict = {'14': monPlan['cj'][i][14], '10': monPlan['cj'][i][10], '12': monPlan['cj'][i][12],
                       '13': monPlan['cj'][i][13], '11': monPlan['cj'][i][11], '15': monPlan['cj'][i][15],
-                      '16': monPlan['cj'][i][16]}
+                      '16': monPlan['cj'][i][16], '17': monPlan['cj'][i][17], '18': monPlan['cj'][i][18],
+                     '19': monPlan['cj'][i][19]}
             cj.append(cjDict)
 
             rDict = {'14': monPlan['r'][i][14], '10': monPlan['r'][i][10], '12': monPlan['r'][i][12],
                      '13': monPlan['r'][i][13], '11': monPlan['r'][i][11], '15': monPlan['r'][i][15],
-                     '16': monPlan['r'][i][16]}
+                     '16': monPlan['r'][i][16], '17': monPlan['r'][i][17], '18': monPlan['r'][i][18],
+                     '19': monPlan['r'][i][19]}
             r.append(rDict)
 
             sDict = {'14': monPlan['s'][i][14], '10': monPlan['s'][i][10], '12': monPlan['s'][i][12],
                      '13': monPlan['s'][i][13], '11': monPlan['s'][i][11], '15': monPlan['s'][i][15],
-                     '16': monPlan['s'][i][16]}
+                     '16': monPlan['s'][i][16], '17': monPlan['s'][i][17], '18': monPlan['s'][i][18],
+                     '19': monPlan['s'][i][19]}
             s.append(sDict)
 
             hDict = {'14': monPlan['h'][i][14], '10': monPlan['h'][i][10], '12': monPlan['h'][i][12],
                      '13': monPlan['h'][i][13], '11': monPlan['h'][i][11], '15': monPlan['h'][i][15],
-                     '16': monPlan['h'][i][16]}
+                     '16': monPlan['h'][i][16], '17': monPlan['h'][i][17], '18': monPlan['h'][i][18],
+                     '19': monPlan['h'][i][19]}
             h.append(hDict)
 
             cDict = {'14': monPlan['c'][i][14], '10': monPlan['c'][i][10], '12': monPlan['c'][i][12],
                      '13': monPlan['c'][i][13], '11': monPlan['c'][i][11], '15': monPlan['c'][i][15],
-                     '16': monPlan['c'][i][16]}
+                     '16': monPlan['c'][i][16], '17': monPlan['c'][i][17], '18': monPlan['c'][i][18],
+                     '19': monPlan['c'][i][19]}
             c.append(cDict)
 
         return {
